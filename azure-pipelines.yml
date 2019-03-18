@@ -1,0 +1,34 @@
+trigger:
+        branches:
+                include: ["master"]
+pool:
+        vmImage: 'ubuntu-16.04'
+jobs:
+        - job: check
+          template: '_build/rust-setup.yml'
+          displayName: 'cargo check'
+          steps:
+                  - script: cargo check --all-targets
+        - job: test
+          displayName: 'cargo test'
+          strategy:
+                  matrix:
+                          windows-stable:
+                                  imageName: 'vs2017-win2016'
+                          linux-stable:
+                                  imageName: 'ubuntu-16.04'
+                          linux-beta:
+                                  imageName: 'ubuntu-16.04'
+                                  toolchain: 'beta'
+                          linux-nightly:
+                                  imageName: 'ubuntu-16.04'
+                                  toolchain: 'nightly'
+                          macos-stable:
+                                  imageName: 'macos-10.13'
+          template: '_build/rust-setup.yml'
+          inputs:
+                  toolchain: $(toolchain)
+          steps:
+                  - script: cargo test
+          pool:
+                  vmImage: $(imageName)
